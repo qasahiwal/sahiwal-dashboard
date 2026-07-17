@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>District Sahiwal Reporting Dashboard</title>
+    <style>
+        /* Global & Dashboard Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #1a365d;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 26px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        header p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            color: #cbd5e0;
+        }
+
+        /* Tabs Style */
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            background-color: #2d3748;
+            padding: 10px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+        .tab-btn {
+            background-color: transparent;
+            color: #cbd5e0;
+            border: none;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 5px;
+            border-radius: 4px;
+        }
+        .tab-btn:hover {
+            color: #ffffff;
+            background-color: #4a5568;
+        }
+        .tab-btn.active {
+            color: #ffffff;
+            background-color: #3182ce;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Content Sections */
+        .content-section {
+            display: none;
+            padding: 30px 20px;
+        }
+        .content-section.active {
+            display: block;
+        }
+
+        /* Action Panel inside sheets */
+        .panel-actions {
+            max-width: 1200px;
+            margin: 0 auto 15px auto;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .popout-btn {
+            background-color: #2b6cb0;
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .popout-btn:hover {
+            background-color: #1a365d;
+        }
+
+        /* Formats / Layouts from original files */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding-bottom: 12px;
+        }
+        
+        /* Report specific color schemes */
+        #report1 h2 { color: #2c3e50; border-bottom: 3px solid #18bc9c; }
+        #report2 h2 { color: #1a365d; border-bottom: 3px solid #3182ce; }
+        #report3 h2 { color: #1a365d; border-bottom: 3px solid #3182ce; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+        thead {
+            color: white;
+        }
+        #report1 thead { background-color: #2c3e50; }
+        #report2 thead { background-color: #2b6cb0; }
+        #report3 thead { background-color: #2b6cb0; }
+
+        th {
+            padding: 12px 10px;
+            font-weight: 600;
+            border: 1px solid #dcdde1;
+            text-align: center;
+            vertical-align: middle;
+        }
+        td {
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        tr:hover { background-color: #edf2f7; }
+
+        /* Style for editable numbers */
+        input[type="number"] {
+            width: 75px;
+            padding: 6px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            text-align: center;
+            font-family: inherit;
+            font-size: 13px;
+            background-color: #fffdf5; /* Warm background for interactive fields */
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3);
+        }
+
+        /* Dynamic Calculations Color Styling */
+        .total-row {
+            background-color: #e8f8f5 !important;
+            font-weight: bold;
+            color: #16a085;
+            border-top: 2px solid #16a085;
+            border-bottom: 2px solid #16a085;
+        }
+        .district-row {
+            background-color: #ebf8ff !important;
+            font-weight: bold;
+            color: #2b6cb0;
+            border-top: 2px solid #2b6cb0;
+            border-bottom: 2px solid #2b6cb0;
+        }
+        .negative {
+            color: #e53e3e !important;
+            font-weight: bold;
+        }
+        .positive {
+            color: #38a169 !important;
+            font-weight: bold;
+        }
+
+        footer {
+            margin: 40px 0 20px 0;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>District Sahiwal - Crime Reporting Dashboard</h1>
+            </header>
+
+    <!-- Navigation Tabs -->
+    <div class="tab-container">
+        <button class="tab-btn active" onclick="switchTab(event, 'report1')">1. Roads Malkhana Report</button>
+        <button class="tab-btn" onclick="switchTab(event, 'report2')">2. Accused CNIC Report</button>
+        <button class="tab-btn" onclick="switchTab(event, 'report3')">3. Nominated & Unknown Accused</button>
+    </div>
+
+    <!-- REPORT 1: Pending Roads Malkhana -->
+    <section id="report1" class="content-section active">
+        <div class="panel-actions">
+            <button class="popout-btn" onclick="openInNewTab('report1')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+                Open in New Tab
+            </button>
+        </div>
+        <div class="container">
+            <h2>Report Pending Roads Malkhana & Others</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>PS Name (Col A)</th>
+                        <th>Previous Meeting 03.07.2026 (Col B)</th>
+                        <th>Pending (Today) (Col C)</th>
+                        <th>Progress (Col D)</th>
+                        <th>Progress %age (Col E)</th>
+                        <th>New Added Pending (Col F)</th>
+                    </tr>
+                </thead>
+                <tbody id="r1-body">
+                    <tr class="r1-row">
+                        <td>City Sahiwal</td>
+                        <td><input type="number" class="r1-b" value="1"></td>
+                        <td><input type="number" class="r1-c" value="1"></td>
+                        <td class="r1-d">0</td>
+                        <td class="r1-e">0.0%</td>
+                        <td><input type="number" class="r1-f" value="2"></td>
+                    </tr>
+                    <tr class="r1-row">
+                        <td>Civil lines</td>
+                        <td><input type="number" class="r1-b" value="0"></td>
+                        <td><input type="number" class="r1-c" value="0"></td>
+                        <td class="r1-d">0</td>
+                        <td class="r1-e">-</td>
+                        <td><input type="number" class="r1-f" value="0"></td>
+                    </tr>
+                    <tr class="r1-row">
+                        <td>Fareedtown</td>
+                        <td><input type="number" class="r1-b" value="4"></td>
+                        <td><input type="number" class="r1-c" value="4"></td>
+                        <td class="r1-d">0</td>
+                        <td class="r1-e">0.0%</td>
+                        <td><input type="number" class="r1-f" value="5"></td>
+                    </tr>
+                    <tr class="r1-row">
+                        <td>Fatehsher</td>
+                        <td><input type="number" class="r1-b" value="7"></td>
+                        <td><input type="number" class="r1-c" value="5"></td>
+                        <td class="r1-d">-2</td>
+                        <td class="r1-e">-28.6%</td>
+                        <td><input type="number" class="r1-f" value="0"></td>
+                    </tr>
+                    <tr class="r1-row">
+                        <td>Ghallamandi</td>
+                        <td><input type="number" class="r1-b" value="45"></td>
+                        <td><input type="number" class="r1-c" value="18"></td>
+                        <td class="r1-d">-27</td>
+                        <td class="r1-e">-60.0%</td>
+                        <td><input type="number" class="r1-f" value="4"></td>
+                    </tr>
+                    <tr class="r1-row">
+                        <td>Bahadarshah</td>
+                        <td><input type="number" class="r1-b" value="0"></td>
+                        <td><input type="number" class="r1-c" value="0"></td>
+                        <td class="r1-d">0</td>
+                        <td class="r1-e">-</td>
+                        <td><input type="number" class="r1-f" value="0"></td>
+                    </tr>
+                    <tr class="r1-row">
+                        <td>Derarahim</td>
+                        <td><input type="number" class="r1-b" value="6"></td>
+                        <td><input type="number" class="r1-c" value="3"></td>
+                        <td class="r1-d">-3</td>
+                        <td class="r1-e">-50.0%</td>
+                        <td><input type="number" class="r1-f" value="15"></td>
+                    </tr>
+                    <tr class="r1-row">
+                        <td>Harrapa</td>
+                        <td><input type="number" class="r1-b" value="15"></td>
+                        <td><input type="number" class="r1-c" value="7"></td>
+                        <td class="r1-d">-8</td>
+                        <td class="r1-e">-53.3%</td>
+                        <td><input type="number" class="r1-f" value="7"></td>
+                    </tr>
+                    <tr class="r1-row">
+                        <td>Kamir</td>
+                        <td><input type="number" class="r1-b" value="0"></td>
+                        <td><input type="number" class="r1-c" value="0"></td>
+                        <td class="r1-d">0</td>
+                        <td class="r1-e">-</td>
+                        <td><input type="number" class="r1-f" value="2"></td>
+                    </tr>
+                    <tr class="r1-row">
+                        <td>Noorshah</td>
+                        <td><input type="number" class="r1-b" value="4"></td>
+                        <td><input type="number" class="r1-c" value="3"></td>
+                        <td class="r1-d">-1</td>
+                        <td class="r1-e">-25.0%</td>
+                        <td><input type="number" class="r1-f" value="13"></td>
+                    </tr>
+                    <tr class="r1-row">
+                        <td>Yousafwala</td>
+                        <td><input type="number" class="r1-b" value="7"></td>
+                        <td><input type="number" class="r1-c" value="6"></td>
+                        <td class="r1-d">-1</td>
+                        <td class="r1-e">-14.3%</td>
+                        <td><input type="number" class="r1-f" value="7"></td>
+                    </tr>
+                    <tr class="r1-row">
+                        <td>City CCW</td>
+                        <td><input type="number" class="r1-b" value="1"></td>
+                        <td><input type="number" class="r1-c" value="0"></td>
+                        <td class="r1-d">-1</td>
+                        <td class="r1-e">-100.0%</td>
+                        <td><input type="number" class="r1-f" value="0"></td>
+                    </tr>
+                    <tr class="r1-row">
+                        <td>Ghaziabad</td>
+                        <td><input type="number" class="r1-b" value="0"></td>
+                        <td><input type="number" class="r1-c" value="0"></td>
+                        <td class="r1-d">0</td>
+                        <td class="r1-e">-</td>
+                        <td><input type="number" class="r1-f" value="0"></td>
+                    </tr>
+                    <tr class="r1-row">
+                        <td>Kassowal</td>
+                        <td><input type="number" class="r1-b" value="1"></td>
+                        <td><input type="number" class="r1-c" value="0"></td>
+                        <td class="r1-d">-1</td>
+                        <td class="r1-e">-100.0%</td>
+                        <td><input type="number" class="r1-f" value="0"></td>
+                    </tr>
+                    <tr class="r1-row">
+                        <td>Okanwala Bangla</td>
+                        <td><input type="number" class="r1-b" value="0"></td>
+                        <td><input type="number" class="r1-c" value="0"></td>
+                        <td class="r1-d">0</td>
+                        <td class="r1-e">-</td>
+                        <td><input type="number" class="r1-f" value="0"></td>
+                    </tr>
+                    <tr class="r1-row">
+                        <td>Saddar CCW</td>
+                        <td><input type="number" class="r1-b" value="0"></td>
+                        <td><input type="number" class="r1-c" value="0"></td>
+                        <td class="r1-d">0</td>
+                        <td class="r1-e">-</td>
+                        <td><input type="number" class="r1-f" value="15"></td>
+                    </tr>
+                    <tr class="r1-row">
+                        <td>Shahkot</td>
+                        <td><input type="number" class="r1-b" value="2"></td>
+                        <td><input type="number" class="r1-c" value="0"></td>
+                        <td class="r1-d">-2</td>
+                        <td class="r1-e">-100.0%</td>
+                        <td><input type="number" class="r1-f" value="0"></td>
+                    </tr>
+                    <tr class="total-row">
+                        <td>Total</td>
+                        <td id="r1-tot-b">93</td>
+                        <td id="r1-tot-c">47</td>
+                        <td id="r1-tot-d">-46</td>
+                        <td id="r1-tot-e">-49.5%</td>
+                        <td id="r1-tot-f">70</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- REPORT 2: Accused CNIC (Year 2010 till to Date) -->
+    <section id="report2" class="content-section">
+        <div class="panel-actions">
+            <button class="popout-btn" onclick="openInNewTab('report2')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+                Open in New Tab
+            </button>
+        </div>
+        <div class="container">
+            <h2>Report Accused CNIC (Year 2010 till to Date)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sr.No</th>
+                        <th>PS Name</th>
+                        <th>Arrested Accused (Col C)</th>
+                        <th>Accused Having CNIC (Col D)</th>
+                        <th>%age of accused having CNIC (Col E)</th>
+                        <th>Accused Not Having CNIC till to Date (Col F)</th>
+                        <th>Accused Not Having CNIC Dated 30.06.2026 (Col G)</th>
+                        <th>Progress (Col H)</th>
+                    </tr>
+                </thead>
+                <tbody id="r2-body">
+                    <tr class="r2-row">
+                        <td>1</td>
+                        <td>CITY SAHIWAL</td>
+                        <td><input type="number" class="r2-c" value="7220"></td>
+                        <td><input type="number" class="r2-d" value="5187"></td>
+                        <td><input type="number" class="r2-e" value="72" step="0.1"></td>
+                        <td><input type="number" class="r2-f" value="2033"></td>
+                        <td><input type="number" class="r2-g" value="2061"></td>
+                        <td class="r2-h">-28</td>
+                    </tr>
+                    <tr class="r2-row">
+                        <td>2</td>
+                        <td>CIVIL LINE</td>
+                        <td><input type="number" class="r2-c" value="2748"></td>
+                        <td><input type="number" class="r2-d" value="2245"></td>
+                        <td><input type="number" class="r2-e" value="82" step="0.1"></td>
+                        <td><input type="number" class="r2-f" value="503"></td>
+                        <td><input type="number" class="r2-g" value="504"></td>
+                        <td class="r2-h">-1</td>
+                    </tr>
+                    <tr class="r2-row">
+                        <td>3</td>
+                        <td>FATEHSHER</td>
+                        <td><input type="number" class="r2-c" value="7652"></td>
+                        <td><input type="number" class="r2-d" value="4981"></td>
+                        <td><input type="number" class="r2-e" value="65" step="0.1"></td>
+                        <td><input type="number" class="r2-f" value="2671"></td>
+                        <td><input type="number" class="r2-g" value="2668"></td>
+                        <td class="r2-h">3</td>
+                    </tr>
+                    <tr class="r2-row">
+                        <td>4</td>
+                        <td>GHALLA MANDI</td>
+                        <td><input type="number" class="r2-c" value="14252"></td>
+                        <td><input type="number" class="r2-d" value="9151"></td>
+                        <td><input type="number" class="r2-e" value="64" step="0.1"></td>
+                        <td><input type="number" class="r2-f" value="5101"></td>
+                        <td><input type="number" class="r2-g" value="5098"></td>
+                        <td class="r2-h">3</td>
+                    </tr>
+                    <tr class="r2-row">
+                        <td>5</td>
+                        <td>FAREED TOWN</td>
+                        <td><input type="number" class="r2-c" value="10782"></td>
+                        <td><input type="number" class="r2-d" value="7539"></td>
+                        <td><input type="number" class="r2-e" value="70" step="0.1"></td>
+                        <td><input type="number" class="r2-f" value="3243"></td>
+                        <td><input type="number" class="r2-g" value="3242"></td>
+                        <td class="r2-h">1</td>
+                    </tr>
+                    <tr class="r2-row">
+                        <td>6</td>
+                        <td>HARRAPA</td>
+                        <td><input type="number" class="r2-c" value="7437"></td>
+                        <td><input type="number" class="r2-d" value="5515"></td>
+                        <td><input type="number" class="r2-e" value="74" step="0.1"></td>
+                        <td><input type="number" class="r2-f" value="1922"></td>
+                        <td><input type="number" class="r2-g" value="1987"></td>
+                        <td class="r2-h">-65</td>
+                    </tr>
+                    <tr class="r2-row">
+                        <td>7</td>
+                        <td>YOUSAF WALA</td>
+                        <td><input type="number" class="r2-c" value="9314"></td>
+                        <td><input type="number" class="r2-d" value="7102"></td>
+                        <td><input type="number" class="r2-e" value="76" step="0.1"></td>
+                        <td><input type="number" class="r2-f" value="2212"></td>
+                        <td><input type="number" class="r2-g" value="2245"></td>
+                        <td class="r2-h">-33</td>
+                    </tr>
+                    <tr class="r2-row">
+                        <td>8</td>
+                        <td>NOORSHAH</td>
+                        <td><input type="number" class="r2-c" value="8099"></td>
+                        <td><input type="number" class="r2-d" value="6156"></td>
+                        <td><input type="number" class="r2-e" value="76" step="0.1"></td>
+                        <td><input type="number" class="r2-f" value="1943"></td>
+                        <td><input type="number" class="r2-g" value="1937"></td>
+                        <td class="r2-h">6</td>
+                    </tr>
+                    <tr class="r2-row">
+                        <td>9</td>
+                        <td>BAHDAR SHAH</td>
+                        <td><input type="number" class="r2-c" value="4927"></td>
+                        <td><input type="number" class="r2-d" value="3517"></td>
+                        <td><input type="number" class="r2-e" value="71" step="0.1"></td>
+                        <td><input type="number" class="r2-f" value="1410"></td>
+                        <td><input type="number" class="r2-g" value="1412"></td>
+                        <td class="r2-h">-2</td>
+                    </tr>
+                    <tr class="r2-row">
+                        <td>10</td>
+                        <td>DERA RAHIM</td>
+                        <td><input type="number" class="r2-c" value="7079"></td>
+                        <td><input type="number" class="r2-d" value="6245"></td>
+                        <td><input type="number" class="r2-e" value="88" step="0.1"></td>
+                        <td><input type="number" class="r2-f" value="834"></td>
+                        <td><input type="number" class="r2-g" value="837"></td>
+                        <td class="r2-h">-3</td>
+                    </tr>
+                    <tr class="r2-row">
+                        <td>11</td>
+                        <td>KAMEER</td>
+                        <td><input type="number" class="r2-c" value="5015"></td>
+                        <td><input type="number" class="r2-d" value="3742"></td>
+                        <td><input type="number" class="r2-e" value="75" step="0.1"></td>
+                        <td><input type="number" class="r2-f" value="1273"></td>
+                        <td><input type="number" class="r2-g" value="1276"></td>
+                        <td class="r2-h">-3</td>
+                    </tr>
+                    <tr class="r2-row">
+                        <td>12</td>
+                        <td>SADDAR CCW</td>
+                        <td><input type="number" class="r2-c" value="8803"></td>
+                        <td><input type="number" class="r2-d" value="5422"></td>
+                        <td><input type="number" class="r2-e" value="62" step="0.1"></td>
+                        <td><input type="number" class="r2-f" value="3381"></td>
+                        <td><input type="number" class="r2-g" value="3394"></td>
+                        <td class="r2-h">-13</td>
+                    </tr>
+                    <tr class="r2-row">
+                        <td>13</td>
+                        <td>CITY CCW</td>
+                        <td><input type="number" class="r2-c" value="6222"></td>
+                        <td><input type="number" class="r2-d" value="4668"></td>
+                        <td><input type="number" class="r2-e" value="74" step="0.1"></td>
+                        <td><input type="number" class="r2-f" value="1554"></td>
+                        <td><input type="number" class="r2-g" value="1555"></td>
+                        <td class="r2-h">-1</td>
+                    </tr>
+                    <tr class="r2-row">
+                        <td>14</td>
+                        <td>SHAHKOT</td>
+                        <td><input type="number" class="r2-c" value="4926"></td>
+                        <td><input type="number" class="r2-d" value="3581"></td>
+                        <td><input type="number" class="r2-e" value="73" step="0.1"></td>
+                        <td><input type="number" class="r2-f" value="1345"></td>
+                        <td><input type="number" class="r2-g" value="1363"></td>
+                        <td class="r2-h">-18</td>
+                    </tr>
+                    <tr class="r2-row">
+                        <td>15</td>
+                        <td>KASSOWAL</td>
+                        <td><input type="number" class="r2-c" value="7020"></td>
+                        <td><input type="number" class="r2-d" value="4997"></td>
+                        <td><input type="number" class="r2-e" value="71" step="0.1"></td>
+                        <td><input type="number" class="r2-f" value="2023"></td>
+                        <td><input type="number" class="r2-g" value="2099"></td>
+                        <td class="r2-h">-76</td>
+                    </tr>
+                    <tr class="r2-row">
+                        <td>16</td>
+                        <td>GHAZI ABAD</td>
+                        <td><input type="number" class="r2-c" value="3947"></td>
+                        <td><input type="number" class="r2-d" value="3073"></td>
+                        <td><input type="number" class="r2-e" value="78" step="0.1"></td>
+                        <td><input type="number" class="r2-f" value="874"></td>
+                        <td><input type="number" class="r2-g" value="874"></td>
+                        <td class="r2-h">0</td>
+                    </tr>
+                    <tr class="r2-row">
+                        <td>17</td>
+                        <td>OKANWALA</td>
+                        <td><input type="number" class="r2-c" value="3972"></td>
+                        <td><input type="number" class="r2-d" value="3283"></td>
+                        <td><input type="number" class="r2-e" value="83" step="0.1"></td>
+                        <td><input type="number" class="r2-f" value="689"></td>
+                        <td><input type="number" class="r2-g" value="689"></td>
+                        <td class="r2-h">0</td>
+                    </tr>
+                    <tr class="district-row">
+                        <td>-</td>
+                        <td>District Totals</td>
+                        <td id="r2-tot-c">119415</td>
+                        <td id="r2-tot-d">86404</td>
+                        <td id="r2-tot-e">72.36%</td>
+                        <td id="r2-tot-f">33011</td>
+                        <td id="r2-tot-g">33241</td>
+                        <td id="r2-tot-h">-230</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- REPORT 3: Nominated & Unknown Accused Report -->
+    <section id="report3" class="content-section">
+        <div class="panel-actions">
+            <button class="popout-btn" onclick="openInNewTab('report3')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+                Open in New Tab
+            </button>
+        </div>
+        <div class="container">
+            <h2>Nominated & Unknown Accused Report</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>PS Name</th>
+                        <th>Pending Nominated Accused AT-Large 2024</th>
+                        <th>Pending Nominated Accused AT-Large 2025</th>
+                        <th>Pending Nominated Accused AT-Large 2026</th>
+                        <th>Updated till to Date (Col E)</th>
+                        <th>Previous 30.06.2026 (Col F)</th>
+                        <th>Progress (Col G)</th>
+                        <th>Progress %age (Col H)</th>
+                        <th>Target</th>
+                        <th>New Added July 2026</th>
+                        <th>Unknown Accused Year 2026 till June 2026 (Col K)</th>
+                        <th>Unknown Accused Year 2026 17.07.26 (Col L)</th>
+                        <th>Progress (Col M)</th>
+                        <th>Progress %age (Col N)</th>
+                    </tr>
+                </thead>
+                <tbody id="r3-body">
+                    <tr class="r3-row">
+                        <td>CITY SAHIWAL</td>
+                        <td><input type="number" class="at-large-2024" value="0"></td>
+                        <td><input type="number" class="at-large-2025" value="16"></td>
+                        <td><input type="number" class="at-large-2026" value="49"></td>
+                        <td class="col-e">65</td>
+                        <td class="col-f">75</td>
+                        <td class="col-g">-10</td>
+                        <td class="col-h">-13.33%</td>
+                        <td>-40.00%</td>
+                        <td><input type="number" class="new-added" value="27"></td>
+                        <td class="col-k">132</td>
+                        <td><input type="number" class="col-l" value="124"></td>
+                        <td class="col-m">-8</td>
+                        <td class="col-n">-6.06%</td>
+                    </tr>
+                    <tr class="r3-row">
+                        <td>CIVIL LINE</td>
+                        <td><input type="number" class="at-large-2024" value="0"></td>
+                        <td><input type="number" class="at-large-2025" value="5"></td>
+                        <td><input type="number" class="at-large-2026" value="26"></td>
+                        <td class="col-e">31</td>
+                        <td class="col-f">41</td>
+                        <td class="col-g">-10</td>
+                        <td class="col-h">-24.39%</td>
+                        <td>-40.00%</td>
+                        <td><input type="number" class="new-added" value="9"></td>
+                        <td class="col-k">33</td>
+                        <td><input type="number" class="col-l" value="26"></td>
+                        <td class="col-m">-7</td>
+                        <td class="col-n">-21.21%</td>
+                    </tr>
+                    <tr class="r3-row">
+                        <td>FAREED TOWN</td>
+                        <td><input type="number" class="at-large-2024" value="0"></td>
+                        <td><input type="number" class="at-large-2025" value="25"></td>
+                        <td><input type="number" class="at-large-2026" value="109"></td>
+                        <td class="col-e">134</td>
+                        <td class="col-f">144</td>
+                        <td class="col-g">-10</td>
+                        <td class="col-h">-6.94%</td>
+                        <td>-40.00%</td>
+                        <td><input type="number" class="new-added" value="63"></td>
+                        <td class="col-k">134</td>
+                        <td><input type="number" class="col-l" value="134"></td>
+                        <td class="col-m">0</td>
+                        <td class="col-n">0.00%</td>
+                    </tr>
+                    <tr class="r3-row">
+                        <td>FATEHSHER</td>
+                        <td><input type="number" class="at-large-2024" value="5"></td>
+                        <td><input type="number" class="at-large-2025" value="18"></td>
+                        <td><input type="number" class="at-large-2026" value="75"></td>
+                        <td class="col-e">98</td>
+                        <td class="col-f">121</td>
+                        <td class="col-g">-23</td>
+                        <td class="col-h">-19.01%</td>
+                        <td>-40.00%</td>
+                        <td><input type="number" class="new-added" value="40"></td>
+                        <td class="col-k">160</td>
+                        <td><input type="number" class="col-l" value="154"></td>
+                        <td class="col-m">-6</td>
+                        <td class="col-n">-3.75%</td>
+                    </tr>
+                    <tr class="r3-row">
+                        <td>GHALLA MANDI</td>
+                        <td><input type="number" class="at-large-2024" value="4"></td>
+                        <td><input type="number" class="at-large-2025" value="42"></td>
+                        <td><input type="number" class="at-large-2026" value="275"></td>
+                        <td class="col-e">321</td>
+                        <td class="col-f">349</td>
+                        <td class="col-g">-28</td>
+                        <td class="col-h">-8.02%</td>
+                        <td>-40.00%</td>
+                        <td><input type="number" class="new-added" value="92"></td>
+                        <td class="col-k">541</td>
+                        <td><input type="number" class="col-l" value="522"></td>
+                        <td class="col-m">-19</td>
+                        <td class="col-n">-3.51%</td>
+                    </tr>
+                    <tr class="r3-row">
+                        <td>BAHDAR SHAH</td>
+                        <td><input type="number" class="at-large-2024" value="1"></td>
+                        <td><input type="number" class="at-large-2025" value="1"></td>
+                        <td><input type="number" class="at-large-2026" value="27"></td>
+                        <td class="col-e">29</td>
+                        <td class="col-f">52</td>
+                        <td class="col-g">-23</td>
+                        <td class="col-h">-44.23%</td>
+                        <td>-40.00%</td>
+                        <td><input type="number" class="new-added" value="22"></td>
+                        <td class="col-k">137</td>
+                        <td><input type="number" class="col-l" value="129"></td>
+                        <td class="col-m">-8</td>
+                        <td class="col-n">-5.84%</td>
+                    </tr>
+                    <tr class="r3-row">
+                        <td>DERA RAHIM</td>
+                        <td><input type="number" class="at-large-2024" value="12"></td>
+                        <td><input type="number" class="at-large-2025" value="52"></td>
+                        <td><input type="number" class="at-large-2026" value="58"></td>
+                        <td class="col-e">122</td>
+                        <td class="col-f">142</td>
+                        <td class="col-g">-20</td>
+                        <td class="col-h">-14.08%</td>
+                        <td>-40.00%</td>
+                        <td><input type="number" class="new-added" value="63"></td>
+                        <td class="col-k">169</td>
+                        <td><input type="number" class="col-l" value="156"></td>
+                        <td class="col-m">-13</td>
+                        <td class="col-n">-7.69%</td>
+                    </tr>
+                    <tr class="r3-row">
+                        <td>HARRAPA</td>
+                        <td><input type="number" class="at-large-2024" value="1"></td>
+                        <td><input type="number" class="at-large-2025" value="3"></td>
+                        <td><input type="number" class="at-large-2026" value="133"></td>
+                        <td class="col-e">137</td>
+                        <td class="col-f">164</td>
+                        <td class="col-g">-27</td>
+                        <td class="col-h">-16.46%</td>
+                        <td>-40.00%</td>
+                        <td><input type="number" class="new-added" value="68"></td>
+                        <td class="col-k">229</td>
+                        <td><input type="number" class="col-l" value="88"></td>
+                        <td class="col-m">-141</td>
+                        <td class="col-n">-61.57%</td>
+                    </tr>
+                    <tr class="r3-row">
+                        <td>KAMEER</td>
+                        <td><input type="number" class="at-large-2024" value="6"></td>
+                        <td><input type="number" class="at-large-2025" value="23"></td>
+                        <td><input type="number" class="at-large-2026" value="48"></td>
+                        <td class="col-e">77</td>
+                        <td class="col-f">86</td>
+                        <td class="col-g">-9</td>
+                        <td class="col-h">-10.47%</td>
+                        <td>-40.00%</td>
+                        <td><input type="number" class="new-added" value="35"></td>
+                        <td class="col-k">189</td>
+                        <td><input type="number" class="col-l" value="186"></td>
+                        <td class="col-m">-3</td>
+                        <td class="col-n">-1.59%</td>
+                    </tr>
+                    <tr class="r3-row">
+                        <td>NOORSHAH</td>
+                        <td><input type="number" class="at-large-2024" value="6"></td>
+                        <td><input type="number" class="at-large-2025" value="8"></td>
+                        <td><input type="number" class="at-large-2026" value="74"></td>
+                        <td class="col-e">88</td>
+                        <td class="col-f">111</td>
+                        <td class="col-g">-23</td>
+                        <td class="col-h">-20.72%</td>
+                        <td>-40.00%</td>
+                        <td><input type="number" class="new-added" value="77"></td>
+                        <td class="col-k">332</td>
+                        <td><input type="number" class="col-l" value="327"></td>
+                        <td class="col-m">-5</td>
+                        <td class="col-n">-1.51%</td>
+                    </tr>
+                    <tr class="r3-row">
+                        <td>YOUSAF WALA</td>
+                        <td><input type="number" class="at-large-2024" value="30"></td>
+                        <td><input type="number" class="at-large-2025" value="26"></td>
+                        <td><input type="number" class="at-large-2026" value="147"></td>
+                        <td class="col-e">203</td>
+                        <td class="col-f">256</td>
+                        <td class="col-g">-53</td>
+                        <td class="col-h">-20.70%</td>
+                        <td>-40.00%</td>
+                        <td><input type="number" class="new-added" value="129"></td>
+                        <td class="col-k">430</td>
+                        <td><input type="number" class="col-l" value="411"></td>
+                        <td class="col-m">-19</td>
+                        <td class="col-n">-4.42%</td>
+                    </tr>
+                    <tr class="r3-row">
+                        <td>CITY CCW</td>
+                        <td><input type="number" class="at-large-2024" value="0"></td>
+                        <td><input type="number" class="at-large-2025" value="2"></td>
+                        <td><input type="number" class="at-large-2026" value="52"></td>
+                        <td class="col-e">54</td>
+                        <td class="col-f">68</td>
+                        <td class="col-g">-14</td>
+                        <td class="col-h">-20.59%</td>
+                        <td>-40.00%</td>
+                        <td><input type="number" class="new-added" value="36"></td>
+                        <td class="col-k">103</td>
+                        <td><input type="number" class="col-l" value="103"></td>
+                        <td class="col-m">0</td>
+                        <td class="col-n">0.00%</td>
+                    </tr>
+                    <tr class="r3-row">
+                        <td>GHAZI ABAD</td>
+                        <td><input type="number" class="at-large-2024" value="0"></td>
+                        <td><input type="number" class="at-large-2025" value="3"></td>
+                        <td><input type="number" class="at-large-2026" value="44"></td>
+                        <td class="col-e">47</td>
+                        <td class="col-f">80</td>
+                        <td class="col-g">-33</td>
+                        <td class="col-h">-41.25%</td>
+                        <td>-40.00%</td>
+                        <td><input type="number" class="new-added" value="33"></td>
+                        <td class="col-k">107</td>
+                        <td><input type="number" class="col-l" value="100"></td>
+                        <td class="col-m">-7</td>
+                        <td class="col-n">-6.54%</td>
+                    </tr>
+                    <tr class="r3-row">
+                        <td>KASSOWAL</td>
+                        <td><input type="number" class="at-large-2024" value="4"></td>
+                        <td><input type="number" class="at-large-2025" value="31"></td>
+                        <td><input type="number" class="at-large-2026" value="74"></td>
+                        <td class="col-e">109</td>
+                        <td class="col-f">126</td>
+                        <td class="col-g">-17</td>
+                        <td class="col-h">-13.49%</td>
+                        <td>-40.00%</td>
+                        <td><input type="number" class="new-added" value="49"></td>
+                        <td class="col-k">221</td>
+                        <td><input type="number" class="col-l" value="134"></td>
+                        <td class="col-m">-87</td>
+                        <td class="col-n">-39.37%</td>
+                    </tr>
+                    <tr class="r3-row">
+                        <td>OKANWALA</td>
+                        <td><input type="number" class="at-large-2024" value="0"></td>
+                        <td><input type="number" class="at-large-2025" value="1"></td>
+                        <td><input type="number" class="at-large-2026" value="11"></td>
+                        <td class="col-e">12</td>
+                        <td class="col-f">29</td>
+                        <td class="col-g">-17</td>
+                        <td class="col-h">-58.62%</td>
+                        <td>-40.00%</td>
+                        <td><input type="number" class="new-added" value="15"></td>
+                        <td class="col-k">58</td>
+                        <td><input type="number" class="col-l" value="54"></td>
+                        <td class="col-m">-4</td>
+                        <td class="col-n">-6.90%</td>
+                    </tr>
+                    <tr class="r3-row">
+                        <td>SADDAR CCW</td>
+                        <td><input type="number" class="at-large-2024" value="0"></td>
+                        <td><input type="number" class="at-large-2025" value="17"></td>
+                        <td><input type="number" class="at-large-2026" value="153"></td>
+                        <td class="col-e">170</td>
+                        <td class="col-f">231</td>
+                        <td class="col-g">-61</td>
+                        <td class="col-h">-26.41%</td>
+                        <td>-40.00%</td>
+                        <td><input type="number" class="new-added" value="121"></td>
+                        <td class="col-k">621</td>
+                        <td><input type="number" class="col-l" value="602"></td>
+                        <td class="col-m">-19</td>
+                        <td class="col-n">-3.06%</td>
+                    </tr>
+                    <tr class="r3-row">
+                        <td>SHAHKOT</td>
+                        <td><input type="number" class="at-large-2024" value="0"></td>
+                        <td><input type="number" class="at-large-2025" value="8"></td>
+                        <td><input type="number" class="at-large-2026" value="72"></td>
+                        <td class="col-e">80</td>
+                        <td class="col-f">91</td>
+                        <td class="col-g">-11</td>
+                        <td class="col-h">-12.09%</td>
+                        <td>-40.00%</td>
+                        <td><input type="number" class="new-added" value="56"></td>
+                        <td class="col-k">100</td>
+                        <td><input type="number" class="col-l" value="95"></td>
+                        <td class="col-m">-5</td>
+                        <td class="col-n">-5.00%</td>
+                    </tr>
+                    <tr class="district-row">
+                        <td>District Totals</td>
+                        <td id="tot-2024">69</td>
+                        <td id="tot-2025">281</td>
+                        <td id="tot-2026">1427</td>
+                        <td id="tot-e">1777</td>
+                        <td id="tot-f">2168</td>
+                        <td id="tot-g">-391</td>
+                        <td id="tot-h">-18.04%</td>
+                        <td>-40.00%</td>
+                        <td id="tot-new">935</td>
+                        <td id="tot-k">3696</td>
+                        <td id="tot-l">3345</td>
+                        <td id="tot-m">-351</td>
+                        <td id="tot-n">-9.50%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <footer>
+        MADE BY IT BRANCH DISTRICT SAHIWAL
+    </footer>
+
+    <script>
+        // ================= Tab Navigation Logic =================
+        function switchTab(evt, reportId) {
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(sec => sec.classList.remove('active'));
+
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(reportId).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        // ================= "Open in New Tab" Logic =================
+        function openInNewTab(reportId) {
+            const element = document.getElementById(reportId).querySelector('.container').cloneNode(true);
+            
+            // Collect modern values from original inputs to transfer them to new tab (inputs don't clone values automatically)
+            const originalInputs = document.getElementById(reportId).querySelectorAll('input');
+            const clonedInputs = element.querySelectorAll('input');
+            originalInputs.forEach((input, index) => {
+                clonedInputs[index].value = input.value;
+            });
+
+            const newWindow = window.open("", "_blank");
+            const doc = newWindow.document;
+
+            doc.write(`
+                <html>
+                <head>
+                    <title>${document.title} - Standalone View</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #333; padding: 20px; }
+                        .container { max-width: 100%; margin: 0 auto; background: #ffffff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow-x: auto; }
+                        h2 { text-align: center; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; padding-bottom: 12px; }
+                        #report1 h2 { color: #2c3e50; border-bottom: 3px solid #18bc9c; }
+                        #report2 h2, #report3 h2 { color: #1a365d; border-bottom: 3px solid #3182ce; }
+                        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+                        thead { color: white; }
+                        #report1 thead { background-color: #2c3e50; }
+                        #report2 thead, #report3 thead { background-color: #2b6cb0; }
+                        th { padding: 12px 10px; font-weight: 600; border: 1px solid #dcdde1; text-align: center; }
+                        td { padding: 10px; border: 1px solid #e2e8f0; text-align: center; }
+                        tr:nth-child(even) { background-color: #f8f9fa; }
+                        input[type="number"] { width: 75px; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; text-align: center; background-color: #fffdf5; }
+                        .total-row { background-color: #e8f8f5 !important; font-weight: bold; color: #16a085; border-top: 2px solid #16a085; border-bottom: 2px solid #16a085; }
+                        .district-row { background-color: #ebf8ff !important; font-weight: bold; color: #2b6cb0; border-top: 2px solid #2b6cb0; border-bottom: 2px solid #2b6cb0; }
+                        .negative { color: #e53e3e !important; font-weight: bold; }
+                        .positive { color: #38a169 !important; font-weight: bold; }
+                        footer { margin-top: 30px; text-align: center; font-size: 20px; font-weight: bold; color: #1a365d; }
+                    </style>
+                </head>
+                <body id="${reportId}">
+                    <div class="standalone-wrapper">
+                        ${element.outerHTML}
+                    </div>
+                    <footer>
+                        MADE BY IT BRANCH DISTRICT SAHIWAL
+                    </footer>
+                    <script>
+                        // Pass calculations to standalone tab
+                        const reportId = "${reportId}";
+                        ${updateReport1.toString()}
+                        ${updateReport2.toString()}
+                        ${updateReport3.toString()}
+                        ${toggleColorClass.toString()}
+
+                        function initialize() {
+                            if (reportId === 'report1') {
+                                updateReport1();
+                                document.querySelectorAll('input').forEach(i => i.addEventListener('input', updateReport1));
+                            } else if (reportId === 'report2') {
+                                updateReport2();
+                                document.querySelectorAll('input').forEach(i => i.addEventListener('input', updateReport2));
+                            } else if (reportId === 'report3') {
+                                updateReport3();
+                                document.querySelectorAll('input').forEach(i => i.addEventListener('input', updateReport3));
+                            }
+                        }
+                        document.addEventListener('DOMContentLoaded', initialize);
+                        initialize();
+                    <\/script>
+                </body>
+                </html>
+            `);
+            doc.close();
+        }
+
+        // ================= REPORT 1 Calculations Logic =================
+        function updateReport1() {
+            const rows = document.querySelectorAll('#report1 .r1-row');
+            let totalB = 0, totalC = 0, totalD = 0, totalF = 0;
+
+            rows.forEach(row => {
+                const valB = parseInt(row.querySelector('.r1-b').value) || 0;
+                const valC = parseInt(row.querySelector('.r1-c').value) || 0;
+                const valF = parseInt(row.querySelector('.r1-f').value) || 0;
+
+                const valD = valC - valB;
+                const cellD = row.querySelector('.r1-d');
+                cellD.innerText = valD;
+                toggleColorClass(cellD, valD);
+
+                const cellE = row.querySelector('.r1-e');
+                if (valB > 0) {
+                    const percentage = (valD / valB) * 100;
+                    cellE.innerText = percentage.toFixed(1) + '%';
+                    toggleColorClass(cellE, percentage);
+                } else {
+                    cellE.innerText = '-';
+                    cellE.className = 'r1-e';
+                }
+
+                totalB += valB;
+                totalC += valC;
+                totalD += valD;
+                totalF += valF;
+            });
+
+            document.getElementById('r1-tot-b').innerText = totalB;
+            document.getElementById('r1-tot-c').innerText = totalC;
+
+            const totD = document.getElementById('r1-tot-d');
+            totD.innerText = totalD;
+            toggleColorClass(totD, totalD);
+
+            const totE = document.getElementById('r1-tot-e');
+            if (totalB > 0) {
+                const totalPct = (totalD / totalB) * 100;
+                totE.innerText = totalPct.toFixed(1) + '%';
+                toggleColorClass(totE, totalPct);
+            } else {
+                totE.innerText = '-';
+            }
+            document.getElementById('r1-tot-f').innerText = totalF;
+        }
+
+        // ================= REPORT 2 Calculations Logic =================
+        function updateReport2(event) {
+            const rows = document.querySelectorAll('#report2 .r2-row');
+            let totalC = 0, totalD = 0, totalF = 0, totalG = 0, totalH = 0;
+
+            rows.forEach(row => {
+                const inputC = row.querySelector('.r2-c');
+                const inputD = row.querySelector('.r2-d');
+                const inputE = row.querySelector('.r2-e');
+                const inputF = row.querySelector('.r2-f');
+                const inputG = row.querySelector('.r2-g');
+
+                const valC = parseInt(inputC.value) || 0;
+                const valD = parseInt(inputD.value) || 0;
+                const valF = parseInt(inputF.value) || 0;
+                const valG = parseInt(inputG.value) || 0;
+
+                if (event && (event.target === inputC || event.target === inputD)) {
+                    if (valC > 0) {
+                        inputE.value = Math.round((valD / valC) * 100);
+                    } else {
+                        inputE.value = 0;
+                    }
+                }
+
+                const valH = valF - valG;
+                const cellH = row.querySelector('.r2-h');
+                cellH.innerText = valH;
+                toggleColorClass(cellH, valH);
+
+                totalC += valC;
+                totalD += valD;
+                totalF += valF;
+                totalG += valG;
+                totalH += valH;
+            });
+
+            document.getElementById('r2-tot-c').innerText = totalC;
+            document.getElementById('r2-tot-d').innerText = totalD;
+            
+            if (totalC > 0) {
+                document.getElementById('r2-tot-e').innerText = ((totalD / totalC) * 100).toFixed(2) + '%';
+            } else {
+                document.getElementById('r2-tot-e').innerText = '0.00%';
+            }
+
+            document.getElementById('r2-tot-f').innerText = totalF;
+            document.getElementById('r2-tot-g').innerText = totalG;
+
+            const totH = document.getElementById('r2-tot-h');
+            totH.innerText = totalH;
+            toggleColorClass(totH, totalH);
+        }
+
+        // ================= REPORT 3 Calculations Logic =================
+        function updateReport3() {
+            const rows = document.querySelectorAll('#report3 .r3-row');
+            let sum24 = 0, sum25 = 0, sum26 = 0, sumE = 0, sumF = 0, sumG = 0;
+            let sumNew = 0, sumK = 0, sumL = 0, sumM = 0;
+
+            rows.forEach(row => {
+                const val24 = parseInt(row.querySelector('.at-large-2024').value) || 0;
+                const val25 = parseInt(row.querySelector('.at-large-2025').value) || 0;
+                const val26 = parseInt(row.querySelector('.at-large-2026').value) || 0;
+                const valF = parseInt(row.querySelector('.col-f').innerText) || 0;
+                const valNew = parseInt(row.querySelector('.new-added').value) || 0;
+                const valK = parseInt(row.querySelector('.col-k').innerText) || 0;
+                const valL = parseInt(row.querySelector('.col-l').value) || 0;
+
+                const valE = val24 + val25 + val26;
+                row.querySelector('.col-e').innerText = valE;
+
+                const valG = valE - valF;
+                const cellG = row.querySelector('.col-g');
+                cellG.innerText = valG;
+                toggleColorClass(cellG, valG);
+
+                const cellH = row.querySelector('.col-h');
+                if (valF !== 0) {
+                    const valH = (valG / valF) * 100;
+                    cellH.innerText = valH.toFixed(2) + '%';
+                    toggleColorClass(cellH, valH);
+                } else {
+                    cellH.innerText = '0.00%';
+                    cellH.className = 'col-h';
+                }
+
+                const valM = valL - valK;
+                const cellM = row.querySelector('.col-m');
+                cellM.innerText = valM;
+                toggleColorClass(cellM, valM);
+
+                const cellN = row.querySelector('.col-n');
+                if (valK !== 0) {
+                    const valN = (valM / valK) * 100;
+                    cellN.innerText = valN.toFixed(2) + '%';
+                    toggleColorClass(cellN, valN);
+                } else {
+                    cellN.innerText = '0.00%';
+                    cellN.className = 'col-n';
+                }
+
+                sum24 += val24;
+                sum25 += val25;
+                sum26 += val26;
+                sumE += valE;
+                sumF += valF;
+                sumG += valG;
+                sumNew += valNew;
+                sumK += valK;
+                sumL += valL;
+                sumM += valM;
+            });
+
+            document.getElementById('tot-2024').innerText = sum24;
+            document.getElementById('tot-2025').innerText = sum25;
+            document.getElementById('tot-2026').innerText = sum26;
+            document.getElementById('tot-e').innerText = sumE;
+            document.getElementById('tot-f').innerText = sumF;
+            
+            const totG = document.getElementById('tot-g');
+            totG.innerText = sumG;
+            toggleColorClass(totG, sumG);
+
+            const totH = document.getElementById('tot-h');
+            if (sumF !== 0) {
+                const percentH = (sumG / sumF) * 100;
+                totH.innerText = percentH.toFixed(2) + '%';
+                toggleColorClass(totH, percentH);
+            } else {
+                totH.innerText = '0.00%';
+            }
+
+            document.getElementById('tot-new').innerText = sumNew;
+            document.getElementById('tot-k').innerText = sumK;
+            document.getElementById('tot-l').innerText = sumL;
+
+            const totM = document.getElementById('tot-m');
+            totM.innerText = sumM;
+            toggleColorClass(totM, sumM);
+
+            const totN = document.getElementById('tot-n');
+            if (sumK !== 0) {
+                const percentN = (sumM / sumK) * 100;
+                totN.innerText = percentN.toFixed(2) + '%';
+                toggleColorClass(totN, percentN);
+            } else {
+                totN.innerText = '0.00%';
+            }
+        }
+
+        // Helper function for dynamic color coding
+        function toggleColorClass(element, value) {
+            // strip existing positive/negative class cleanly
+            element.classList.remove('negative', 'positive');
+            if (value < 0) {
+                element.classList.add('negative');
+            } else if (value > 0) {
+                element.classList.add('positive');
+            }
+        }
+
+        // Initialize and bind events on dashboard load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateReport1();
+            updateReport2();
+            updateReport3();
+
+            // Bind listeners to trigger updates immediately on input changes
+            document.querySelectorAll('#report1 input').forEach(input => {
+                input.addEventListener('input', updateReport1);
+            });
+            document.querySelectorAll('#report2 input').forEach(input => {
+                input.addEventListener('input', updateReport2);
+            });
+            document.querySelectorAll('#report3 input').forEach(input => {
+                input.addEventListener('input', updateReport3);
+            });
+        });
+    </script>
+</body>
+</html>
